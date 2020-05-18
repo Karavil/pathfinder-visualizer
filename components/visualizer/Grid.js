@@ -1,27 +1,31 @@
-import React, { useRef } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import styled from "styled-components";
 
-const GridContainer = styled.div`
-   display: flex;
+const Grid = ({ width = 1000, height = 1000 }) => {
+   const canvas = useRef(null);
+   const [pixelRatio, setPixelRatio] = useState(1);
 
-   width: 100%;
-   height: 800px;
+   useLayoutEffect(() => {
+      setPixelRatio(window.devicePixelRatio);
 
-   background: grey;
-`;
+      const context = canvas.current.getContext("2d");
+      context.save();
+      context.scale(pixelRatio, pixelRatio);
+      context.fillStyle = "hsl(0, 0%, 95%)";
+      context.fillRect(0, 0, width, height);
 
-const Grid = () => {
-   const canvasRef = useRef();
+      context.strokeStyle = "black";
+      context.beginPath();
+      context.arc(width / 2, height / 2, width / 4, 0, Math.PI * 2);
+      context.stroke();
+      context.restore();
+   }, [pixelRatio]);
 
-   return (
-      <GridContainer>
-         <canvas
-            ref={canvasRef}
-            width={window.innerWidth}
-            height={window.innerHeight}
-         />
-      </GridContainer>
-   );
+   const dw = Math.floor(pixelRatio * width);
+   const dh = Math.floor(pixelRatio * height);
+   const style = { width, height };
+
+   return <canvas ref={canvas} width={dw} height={dh} style={style} />;
 };
 
 export default Grid;
