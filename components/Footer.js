@@ -5,15 +5,15 @@ import { Flex, Text } from "@chakra-ui/core";
 const Footer = () => {
    return (
       <Flex
-         p={1}
-         bg="background"
-         color="primary"
+         p={2}
+         bg="primary"
+         color="background"
          justifyContent="center"
          alignItems="center"
+         width="100%"
          position="absolute"
          bottom="0"
-         width="100%"
-         shadow="0px -4px 20px -6px rgba(0,0,0,0.75);"
+         shadow="0px -4px 40px -6px rgba(0,0,0,0.25);"
       >
          <Text>Made with ❤️ by Alp Karavil</Text>
       </Flex>

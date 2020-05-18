@@ -1,76 +1,110 @@
-import React, { useLayoutEffect, useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 
+import { SimpleGrid } from "@chakra-ui/core";
 import styled from "styled-components";
-import { Flex } from "@chakra-ui/core";
 
-const StyledCanvas = styled.canvas`
-   position: absolute;
-   z-index: -1;
+const StyledSquare = styled.div`
+   background: ${(props) =>
+      props.clicked ? "orange" : props.theme.colors.secondaryChrome};
+
+   width: ${(props) => `${props.squareSide - 6}px`};
+   height: ${(props) => `${props.squareSide - 6}px`};
+
+   margin: 3px;
+   border-radius: 3px;
+
+   transition: all 0.1s ease-in-out;
+   &:hover {
+      transform: scale(1.3);
+      cursor: pointer;
+      border: ${(props) => `3px solid ${props.theme.colors.branding}`};
+   }
 `;
 
-const drawGrid = (ctx, width, height, squareSide) => {
-   ctx.beginPath();
-   ctx.lineWidth = 0.5;
-   ctx.strokeStyle = "white";
-
-   for (let i = 0; i <= height; i = i + squareSide) {
-      ctx.moveTo(0, i);
-      ctx.lineTo(width, i);
-      ctx.stroke();
-   }
-   for (let j = 0; j <= width; j = j + squareSide) {
-      ctx.moveTo(j, 0);
-      ctx.lineTo(j, height);
-      ctx.stroke();
-   }
+const Square = ({ data, squareSide, toggleSquare }) => {
+   return (
+      <StyledSquare
+         key={data.position}
+         clicked={data.clicked}
+         squareSide={squareSide}
+         onClick={() => toggleSquare(data.position)}
+      />
+   );
 };
 
 const Grid = ({ backgroundColor }) => {
-   const canvas = useRef(null);
-
-   const [pixelRatio, setPixelRatio] = useState(1);
    const [dimensions, setDimensions] = useState({
       width: 1000,
       height: 1000,
    });
-   const [squareSide, setSquareSize] = useState(40);
 
-   const updateDimensions = (window) => {
+   const [squareSide, setSquareSize] = useState(40);
+   const [gridMap, setGridMap] = useState([]);
+
+   const toggleSquare = (position) => {
+      console.log(position);
+      setGridMap((gridMap) =>
+         gridMap.map((square) => {
+            if (
+               square.position[0] === position[0] &&
+               square.position[1] === position[1]
+            ) {
+               console.log("equals");
+               return {
+                  ...square,
+                  clicked: !square.clicked,
+               };
+            }
+            return square;
+         })
+      );
+   };
+
+   const updateDimensions = () => {
+      let preferredWidth = window.innerWidth * 0.95;
+      let preferredHeight = window.innerHeight * 0.9;
+
       setDimensions({
-         width: window.innerWidth - (window.innerWidth % squareSide),
-         height: window.innerHeight - (window.innerHeight % squareSide),
+         width: preferredWidth - (preferredWidth % squareSide),
+         height: preferredHeight - (preferredHeight % squareSide),
       });
    };
 
    useEffect(() => {
-      updateDimensions(window);
-      setPixelRatio(window.devicePixelRatio);
-      window.addEventListener("resize", () => updateDimensions(window));
-      return () => {
-         window.removeEventListener("resize", () => updateDimensions(window));
-      };
+      updateDimensions();
+
+      window.addEventListener("resize", updateDimensions);
+      return () => window.removeEventListener("resize", updateDimensions);
    }, []);
 
    useEffect(() => {
-      const ctx = canvas.current.getContext("2d");
-      const { width, height } = dimensions;
+      const squares = (dimensions.width * dimensions.height) / squareSide ** 2;
+      // How many squares each row should hold (also the amount of columns)
+      const rowSquareCount = dimensions.width / squareSide;
+      const gridGeneration = [];
+      for (let i = 0; i < squares; i++) {
+         const xPosition = Math.floor(i / rowSquareCount);
+         const yPosition = i % rowSquareCount;
 
-      ctx.save();
-      ctx.scale(pixelRatio, pixelRatio);
-      ctx.fillStyle = backgroundColor;
-      ctx.fillRect(0, 0, width, height);
+         gridGeneration.push({
+            position: [xPosition, yPosition],
+            clicked: false,
+         });
+      }
+      setGridMap(gridGeneration);
+   }, [dimensions]);
 
-      drawGrid(ctx, width, height, squareSide);
-   }, [pixelRatio, dimensions, squareSide]);
-
-   const dw = Math.floor(pixelRatio * dimensions.width);
-   const dh = Math.floor(pixelRatio * dimensions.height);
-
-   console.log(dimensions);
    return (
-      <Flex w="100%" justifyContent="center" height="100vh">
-         <StyledCanvas ref={canvas} width={dw} height={dh} style={dimensions} />
-      </Flex>
+      <SimpleGrid
+         py={6}
+         width={dimensions.width}
+         columns={dimensions.width / squareSide}
+         mx="auto"
+      >
+         {gridMap.map((data) => (
+            <Square data={data} toggleSquare={toggleSquare} squareSide={40} />
+         ))}
+      </SimpleGrid>
    );
 };
 
