@@ -15,6 +15,8 @@ const StyledSquare = styled.div`
    margin: 3px;
    border-radius: 3px;
 
+   user-select: none;
+
    &:hover {
       transition: transform 0.04s ease-in-out;
       background: ${({ theme }) => theme.colors.inverseBranding};
@@ -56,18 +58,20 @@ const Grid = ({ backgroundColor }) => {
    const toggleSquare = (position) => {
       console.log(position);
       setGridMap((gridMap) =>
-         gridMap.map((square) => {
-            if (
-               square.position[0] === position[0] &&
-               square.position[1] === position[1]
-            ) {
-               return {
-                  ...square,
-                  clicked: !square.clicked,
-               };
-            }
-            return square;
-         })
+         gridMap.map((row) =>
+            row.map((squareData) => {
+               if (
+                  squareData.position[0] === position[0] &&
+                  squareData.position[1] === position[1]
+               ) {
+                  return {
+                     ...squareData,
+                     clicked: !squareData.clicked,
+                  };
+               }
+               return squareData;
+            })
+         )
       );
    };
 
@@ -83,7 +87,6 @@ const Grid = ({ backgroundColor }) => {
 
    useEffect(() => {
       updateDimensions();
-
       window.addEventListener("resize", updateDimensions);
       return () => window.removeEventListener("resize", updateDimensions);
    }, []);
@@ -92,12 +95,13 @@ const Grid = ({ backgroundColor }) => {
       const squares = (dimensions.width * dimensions.height) / squareSide ** 2;
       // How many squares each row should hold (also the amount of columns)
       const rowSquareCount = dimensions.width / squareSide;
-      const gridGeneration = [];
+      const gridGeneration = [[]];
       for (let i = 0; i < squares; i++) {
          const xPosition = Math.floor(i / rowSquareCount);
          const yPosition = i % rowSquareCount;
 
-         gridGeneration.push({
+         if (xPosition > gridGeneration.length - 1) gridGeneration.push([]);
+         gridGeneration[xPosition].push({
             position: [xPosition, yPosition],
             clicked: false,
          });
@@ -112,9 +116,16 @@ const Grid = ({ backgroundColor }) => {
          columns={dimensions.width / squareSide}
          mx="auto"
       >
-         {gridMap.map((data) => (
-            <Square data={data} toggleSquare={toggleSquare} squareSide={40} />
-         ))}
+         {gridMap.map((row) =>
+            row.map((squareData) => (
+               <Square
+                  key={squareData.position}
+                  data={squareData}
+                  squareSide={40}
+                  toggleSquare={toggleSquare}
+               />
+            ))
+         )}
       </SimpleGrid>
    );
 };
