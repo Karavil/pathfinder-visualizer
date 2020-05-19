@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import { SimpleGrid } from "@chakra-ui/core";
 import styled from "styled-components";
 
+import Matrix from "../../utils/algos/matrix";
+
 const StyledSquare = styled.div`
    background: ${(props) => {
       if (props.clicked) return props.theme.colors.inverseBranding;
@@ -55,24 +57,30 @@ const Grid = ({ backgroundColor }) => {
    const [squareSide, setSquareSize] = useState(40);
    const [gridMap, setGridMap] = useState([]);
 
+   const solveMaze = () => {
+      const grid = new Matrix(gridMap);
+      animateSteps(grid.dfs(0, 0, 19, 10).solution);
+   };
+
+   const animateSteps = (steps) => {
+      console.log(steps.length);
+      for (let i = 1; i < steps.length; i++) {
+         setTimeout(() => {
+            console.log(steps[i]);
+            toggleSquare(steps[i]);
+         }, 100 * i);
+      }
+   };
+
    const toggleSquare = (position) => {
-      console.log(position);
-      setGridMap((gridMap) =>
-         gridMap.map((row) =>
-            row.map((squareData) => {
-               if (
-                  squareData.position[0] === position[0] &&
-                  squareData.position[1] === position[1]
-               ) {
-                  return {
-                     ...squareData,
-                     clicked: !squareData.clicked,
-                  };
-               }
-               return squareData;
-            })
-         )
-      );
+      setGridMap((gridMap) => {
+         const squareData = gridMap[position[0]][position[1]];
+         gridMap[position[0]][position[1]] = {
+            ...squareData,
+            clicked: !squareData.clicked,
+         };
+         return [...gridMap];
+      });
    };
 
    const updateDimensions = () => {
@@ -97,12 +105,12 @@ const Grid = ({ backgroundColor }) => {
       const rowSquareCount = dimensions.width / squareSide;
       const gridGeneration = [[]];
       for (let i = 0; i < squares; i++) {
-         const xPosition = Math.floor(i / rowSquareCount);
-         const yPosition = i % rowSquareCount;
+         const column = Math.floor(i / rowSquareCount);
+         const row = i % rowSquareCount;
 
-         if (xPosition > gridGeneration.length - 1) gridGeneration.push([]);
-         gridGeneration[xPosition].push({
-            position: [xPosition, yPosition],
+         if (column > gridGeneration.length - 1) gridGeneration.push([]);
+         gridGeneration[column].push({
+            position: [column, row],
             clicked: false,
          });
       }
@@ -110,23 +118,26 @@ const Grid = ({ backgroundColor }) => {
    }, [dimensions]);
 
    return (
-      <SimpleGrid
-         py={6}
-         width={dimensions.width}
-         columns={dimensions.width / squareSide}
-         mx="auto"
-      >
-         {gridMap.map((row) =>
-            row.map((squareData) => (
-               <Square
-                  key={squareData.position}
-                  data={squareData}
-                  squareSide={40}
-                  toggleSquare={toggleSquare}
-               />
-            ))
-         )}
-      </SimpleGrid>
+      <>
+         <SimpleGrid
+            py={6}
+            width={dimensions.width}
+            columns={dimensions.width / squareSide}
+            mx="auto"
+         >
+            {gridMap.map((row) =>
+               row.map((squareData) => (
+                  <Square
+                     key={squareData.position}
+                     data={squareData}
+                     squareSide={40}
+                     toggleSquare={toggleSquare}
+                  />
+               ))
+            )}
+         </SimpleGrid>
+         <button onClick={solveMaze}>Solve</button>
+      </>
    );
 };
 

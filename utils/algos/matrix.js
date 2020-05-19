@@ -1,20 +1,23 @@
 class Matrix {
    constructor(matrix) {
-      this.matrix = [...matrix];
-      this.visited = [...matrix];
-      this.endPos = [0, 0];
+      this.matrix = matrix;
+      this.visited = matrix.map((row) => row.map((data) => data));
+      console.log(this.matrix === this.visited);
+      this.endPos = null;
       this.solution = null;
+      this.stepsTaken = [];
    }
 
    clear() {
       this.visited = [...this.matrix];
       this.solution = null;
+      this.endPos = null;
    }
 
    dfs(startRowIndex, startColumnIndex, endRowIndex, endColumnIndex) {
       this.endPos = [endRowIndex, endColumnIndex];
       this.dfsHelper(startRowIndex, startColumnIndex, []);
-      return this.solution;
+      return { solution: this.solution, steps: this.stepsTaken };
    }
 
    dfsHelper(i, j, possibleSolution) {
@@ -41,10 +44,25 @@ class Matrix {
    bfs() {}
 }
 
-const testMatrix = [
-   [0, 0, 0, 0, 0],
-   [0, 0, 0, 0, 0],
-   [0, 0, 0, 0, 0],
-];
-const myMatrix = new Matrix(testMatrix);
-console.log(myMatrix.dfs(0, 0, 1, 2));
+export default Matrix;
+
+// const testMatrix = [
+//    [0, 0, 0, 0, 0],
+//    [0, 0, 0, 0, 0],
+//    [0, 0, 0, 0, 0],
+//    [0, 0, 0, 0, 0],
+//    [0, 0, 0, 0, 0],
+//    [0, 0, 0, 0, 0],
+//    [0, 0, 0, 0, 0],
+//    [0, 0, 0, 0, 0],
+//    [0, 0, 0, 0, 0],
+//    [0, 0, 0, 0, 0],
+//    [0, 0, 0, 0, 0],
+//    [0, 0, 0, 0, 0],
+//    [0, 0, 0, 0, 0],
+//    [0, 0, 0, 0, 0],
+//    [0, 0, 0, 0, 0],
+//    [0, 0, 0, 0, 0],
+// ];
+// const myMatrix = new Matrix(testMatrix);
+// console.log(myMatrix.dfs(0, 0, 1, 2));
