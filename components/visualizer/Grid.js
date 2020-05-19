@@ -1,24 +1,23 @@
 import React, { useEffect, useState } from "react";
 
-import { SimpleGrid } from "@chakra-ui/core";
 import styled from "styled-components";
 
 import Matrix from "../../utils/algos/matrix";
 
-const StyledSquare = styled.div`
+const StyledSquare = styled.td`
    background: ${(props) => {
       if (props.clicked) return props.theme.colors.inverseBranding;
       return props.theme.colors.secondaryChrome;
    }};
 
-   width: ${(props) => `${props.squareSide - 6}px`};
-   height: ${(props) => `${props.squareSide - 6}px`};
-
-   margin: 3px;
-   border-radius: 3px;
+   width: ${(props) => `${props.squareSide - 2}px`};
+   height: ${(props) => `${props.squareSide - 2}px`};
+   border-radius: 5px;
+   border: 1px solid white;
 
    user-select: none;
 
+   transition: background 0.5s ease-in-out;
    &:hover {
       transition: transform 0.04s ease-in-out;
       background: ${({ theme }) => theme.colors.inverseBranding};
@@ -37,18 +36,26 @@ const StyledSquare = styled.div`
    }
 `;
 
-const Square = ({ data, squareSide, toggleSquare }) => {
+const Square = ({ row, column, clicked, squareSide, toggleSquare }) => {
+   console.log("created");
    return (
       <StyledSquare
-         key={data.position}
-         clicked={data.clicked}
+         key={[row, column]}
+         clicked={clicked}
          squareSide={squareSide}
-         onClick={() => toggleSquare(data.position)}
+         onClick={() => toggleSquare([row, column])}
+         // onMouseDown={() => toggleSquare([row, column])}
       />
    );
 };
 
-const Grid = ({ backgroundColor }) => {
+function squaresAreEqual(prevSquare, nextSquare) {
+   return prevSquare.clicked === nextSquare.clicked;
+}
+
+const MemoizedSquare = React.memo(Square, squaresAreEqual);
+
+const Grid = () => {
    const [dimensions, setDimensions] = useState({
       width: 1000,
       height: 1000,
@@ -119,23 +126,27 @@ const Grid = ({ backgroundColor }) => {
 
    return (
       <>
-         <SimpleGrid
+         <table
             py={6}
             width={dimensions.width}
             columns={dimensions.width / squareSide}
             mx="auto"
          >
-            {gridMap.map((row) =>
-               row.map((squareData) => (
-                  <Square
-                     key={squareData.position}
-                     data={squareData}
-                     squareSide={40}
-                     toggleSquare={toggleSquare}
-                  />
-               ))
-            )}
-         </SimpleGrid>
+            {gridMap.map((row) => (
+               <tr>
+                  {row.map((squareData) => (
+                     <MemoizedSquare
+                        key={squareData.position}
+                        row={squareData.position[0]}
+                        column={squareData.position[1]}
+                        clicked={squareData.clicked}
+                        squareSide={40}
+                        toggleSquare={toggleSquare}
+                     />
+                  ))}
+               </tr>
+            ))}
+         </table>
          <button onClick={solveMaze}>Solve</button>
       </>
    );
