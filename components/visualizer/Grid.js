@@ -4,8 +4,10 @@ import { SimpleGrid } from "@chakra-ui/core";
 import styled from "styled-components";
 
 const StyledSquare = styled.div`
-   background: ${(props) =>
-      props.clicked ? "orange" : props.theme.colors.secondaryChrome};
+   background: ${(props) => {
+      if (props.clicked) return props.theme.colors.inverseBranding;
+      return props.theme.colors.secondaryChrome;
+   }};
 
    width: ${(props) => `${props.squareSide - 6}px`};
    height: ${(props) => `${props.squareSide - 6}px`};
@@ -13,11 +15,21 @@ const StyledSquare = styled.div`
    margin: 3px;
    border-radius: 3px;
 
-   transition: all 0.1s ease-in-out;
    &:hover {
-      transform: scale(1.3);
+      transition: transform 0.04s ease-in-out;
+      background: ${({ theme }) => theme.colors.inverseBranding};
+      transform: scale(1.2);
+      transform: ${(props) => {
+         if (props.clicked) return "scale(1)";
+         return "scale(1.3)";
+      }};
+
+      box-shadow: 0px 0px 30px 0px rgba(0, 0, 0, 0.1);
       cursor: pointer;
-      border: ${(props) => `3px solid ${props.theme.colors.branding}`};
+   }
+   &:active {
+      transition: transform 0.1s ease-in-out;
+      transform: scale(0.9);
    }
 `;
 
@@ -49,7 +61,6 @@ const Grid = ({ backgroundColor }) => {
                square.position[0] === position[0] &&
                square.position[1] === position[1]
             ) {
-               console.log("equals");
                return {
                   ...square,
                   clicked: !square.clicked,
@@ -61,7 +72,7 @@ const Grid = ({ backgroundColor }) => {
    };
 
    const updateDimensions = () => {
-      let preferredWidth = window.innerWidth * 0.95;
+      let preferredWidth = window.innerWidth * 0.985;
       let preferredHeight = window.innerHeight * 0.9;
 
       setDimensions({
